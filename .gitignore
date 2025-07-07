@@ -1,0 +1,15 @@
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment files (keep secrets safe)
+.env
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# VSCode or IDE settings (optional)
+.vscode/
+.idea/
