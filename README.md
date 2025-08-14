@@ -20,7 +20,7 @@ This Python script collects the ON/OFF status of fans and lights in multiple roo
 ```bash
 git clone https://github.com/your-username/SmartRoom-ApplianceMonitor.git
 cd SmartRoom-ApplianceMonitor
-pip install -r requirements.txt```
+pip install -r requirements.txt
 
 
 Created by :- Shreyansh 
