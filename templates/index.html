@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Input Appliance Status{% endblock %}
+
+{% block content %}
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><i class="fas fa-edit"></i> Update Appliance Status</h2>
+            <p class="card-description">Select which appliances are currently ON in each room</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label class="form-label" for="email">
+                    <i class="fas fa-envelope"></i> Email for Reports (Optional)
+                </label>
+                <input type="email" id="email" name="email" class="form-input"
+                       placeholder="Enter email address for status reports">
+            </div>
+
+            <div class="rooms-grid">
+                {% for room in rooms %}
+                <div class="room-card">
+                    <div class="room-header">
+                        <div class="room-icon">{{ room.split('-')[1] }}</div>
+                        <div class="room-title">Room {{ room }}</div>
+                    </div>
+
+                    <div class="switch-container">
+                        <div class="appliance-item">
+                            <div class="appliance-label">
+                                <i class="fas fa-fan appliance-icon"></i>
+                                <span>Fan</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" name="fan_{{ room }}" value="1">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="appliance-item">
+                            <div class="appliance-label">
+                                <i class="fas fa-lightbulb appliance-icon"></i>
+                                <span>Light</span>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" name="light_{{ room }}" value="1">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full">
+                <i class="fas fa-save"></i>
+                Submit Status & View Report
+            </button>
+        </form>
+    </div>
+{% endblock %}

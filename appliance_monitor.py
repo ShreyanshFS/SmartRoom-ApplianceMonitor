@@ -1,52 +1,53 @@
-# This Code only supports Boolean inputs: 1 or 0
-# 1 denotes ON, and 0 denotes OFF
-
-print('''This Code only supports boolean inputs 
-That's 1 or 0
-Here,
-1 Denotes ON
-&
-0 Denotes OFF''')
-
-# Required Libraries
-import time
+from flask import Flask, render_template, request, redirect, url_for
 import datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import os
+from dotenv import load_dotenv
 
-# Email Input
-TO = input('Enter Email for Response = ')
+# Load environment variables
+load_dotenv()
+
+app = Flask(__name__)
 
 # Room Configuration
-rooms = ['A-11', 'A-12', 'A-13', 'A-14']
-light = []
-fan = []
+ROOMS = ['A-11', 'A-12', 'A-13', 'A-14']
 
-# HTML Templates
-free_text = """<tr>
-    <td>TIMEDATE</td>
-    <td>ROOMNO</td>"""
+# Global variables to store current status
+current_fan_status = {}
+current_light_status = {}
+last_update = None
+email_recipient = None
 
-free_end = """</tr>"""
-
-TEXT_START = """<!DOCTYPE html>
+def send_email_report(fan_status, light_status, timestamp, recipient):
+    """Send HTML email report"""
+    # Generate HTML Content
+    html_content = f"""<!DOCTYPE html>
 <html>
 <head>
 <style>
-table {
+table {{
     font-family: Arial, sans-serif;
     border-collapse: collapse;
     width: 100%;
-}
-td, th {
-    border: 1px solid #000000; 
+}}
+td, th {{
+    border: 1px solid #000000;
     text-align: center;
     padding: 8px;
-}
-tr {
+}}
+tr {{
     text-align: center;
-}
+}}
+.status-on {{
+    background-color: #d4edda;
+    color: #155724;
+}}
+.status-off {{
+    background-color: #f8d7da;
+    color: #721c24;
+}}
 </style>
 </head>
 <body>
@@ -60,57 +61,30 @@ tr {
     <th>Light</th>
 </tr>"""
 
-TEXT_END = """</table>
+    for room in ROOMS:
+        html_content += f"""
+<tr>
+    <td>{timestamp}</td>
+    <td>{room}</td>
+    <td class="{'status-on' if fan_status[room] else 'status-off'}">{'ON' if fan_status[room] else 'OFF'}</td>
+    <td class="{'status-on' if light_status[room] else 'status-off'}">{'ON' if light_status[room] else 'OFF'}</td>
+</tr>"""
+
+    html_content += """
+</table>
 </body>
 </html>"""
 
-# Infinite Monitoring Loop
-while True:
-    now = datetime.datetime.now().isoformat()
-    TEXT_MID = ""
-    light.clear()
-    fan.clear()
-
-    # Collect Input for Each Room
-    for room in rooms:
-        fan_status = int(input(f"Please enter the status of fan in {room} (1/0) = "))
-        light_status = int(input(f"Please enter the status of light in {room} (1/0) = "))
-        fan.append(fan_status)
-        light.append(light_status)
-
-    # Generate HTML Content for Each Room
-    for i in range(len(rooms)):
-        temp = free_text.replace("ROOMNO", rooms[i])
-        temp = temp.replace("TIMEDATE", now)
-        TEXT_MID += temp
-
-        # Light Status
-        if light[i] == 1:
-            TEXT_MID += """<td bgcolor="#00FF00">ON</td>"""
-        else:
-            TEXT_MID += """<td bgcolor="#FF0000">OFF</td>"""
-
-        # Fan Status
-        if fan[i] == 1:
-            TEXT_MID += """<td bgcolor="#00FF00">ON</td>"""
-        else:
-            TEXT_MID += """<td bgcolor="#FF0000">OFF</td>"""
-
-        TEXT_MID += free_end
-
-    # Final Email Body
-    TEXT = TEXT_START + TEXT_MID + TEXT_END
-
-    # Setup Email
-    gmail_sender = 'appliances.status@gmail.com'
-    gmail_passwd = 'rvwsbrpwiolvpesh'
+    # Email setup
+    gmail_sender = os.getenv('GMAIL_SENDER', 'appliances.status@gmail.com')
+    gmail_passwd = os.getenv('GMAIL_PASSWORD', 'rvwsbrpwiolvpesh')
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "Statistics of fan and light from the hostel"
     msg['From'] = gmail_sender
-    msg['To'] = TO
+    msg['To'] = recipient
 
-    HTML_TEXT = MIMEText(TEXT, 'html')
+    HTML_TEXT = MIMEText(html_content, 'html')
     msg.attach(HTML_TEXT)
 
     # Send Email
@@ -119,12 +93,52 @@ while True:
         server.ehlo()
         server.starttls()
         server.login(gmail_sender, gmail_passwd)
-        server.sendmail(gmail_sender, [TO], msg.as_string())
+        server.sendmail(gmail_sender, [recipient], msg.as_string())
         server.quit()
         print('Email sent successfully.')
-
+        return True
     except Exception as e:
         print('Error sending email:', str(e))
+        return False
 
-    # Wait before next run
-    time.sleep(30)
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    global current_fan_status, current_light_status, last_update, email_recipient
+
+    if request.method == 'POST':
+        email_recipient = request.form.get('email')
+
+        # Clear previous status
+        current_fan_status.clear()
+        current_light_status.clear()
+
+        # Get status for each room
+        for room in ROOMS:
+            fan_status = request.form.get(f'fan_{room}') == '1'
+            light_status = request.form.get(f'light_{room}') == '1'
+            current_fan_status[room] = fan_status
+            current_light_status[room] = light_status
+
+        last_update = datetime.datetime.now().isoformat()
+
+        # Send email if recipient provided
+        if email_recipient:
+            send_email_report(current_fan_status, current_light_status, last_update, email_recipient)
+
+        return redirect(url_for('report'))
+
+    return render_template('index.html', rooms=ROOMS)
+
+@app.route('/report')
+def report():
+    if not current_fan_status or not current_light_status:
+        return redirect(url_for('index'))
+
+    return render_template('report.html',
+                         rooms=ROOMS,
+                         fan_status=current_fan_status,
+                         light_status=current_light_status,
+                         timestamp=last_update)
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
