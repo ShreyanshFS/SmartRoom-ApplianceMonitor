@@ -1,17 +1,39 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
-{% block title %}Appliance Status Report{% endblock %}
+{% block title %}Appliance Status Report - SmartRoom{% endblock %}
 
 {% block content %}
+    <div class="page-header">
+        <h1>Status Report</h1>
+        <p>Real-time status of all appliances across rooms</p>
+    </div>
+
+    <!-- Last Updated -->
     <div class="timestamp">
         <i class="fas fa-clock"></i>
         <strong>Last Updated:</strong> {{ timestamp }}
     </div>
 
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card">
+            <span class="summary-label">Rooms monitored</span>
+            <strong class="summary-value">{{ rooms|length }}</strong>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Fans ON</span>
+            <strong class="summary-value">{{ fan_status.values()|sum }}</strong>
+        </div>
+        <div class="summary-card">
+            <span class="summary-label">Lights ON</span>
+            <strong class="summary-value">{{ light_status.values()|sum }}</strong>
+        </div>
+    </div>
+
+    <!-- Report Table -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><i class="fas fa-chart-bar"></i> Current Appliance Status</h2>
-            <p class="card-description">Real-time status of all appliances across rooms</p>
+            <h2 class="card-title"><i class="fas fa-table"></i> Detailed Status</h2>
         </div>
 
         <div class="report-container">
@@ -48,10 +70,15 @@
         </div>
     </div>
 
-    <div class="nav-links">
+    <!-- Navigation -->
+    <div class="action-buttons">
         <a href="{{ url_for('index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i>
             Update Status
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-home"></i>
+            Dashboard
         </a>
     </div>
 {% endblock %}

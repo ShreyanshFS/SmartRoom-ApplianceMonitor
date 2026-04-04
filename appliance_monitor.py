@@ -127,7 +127,22 @@ def index():
 
         return redirect(url_for('report'))
 
-    return render_template('index.html', rooms=ROOMS)
+    return render_template(
+        'index.html',
+        rooms=ROOMS,
+        fan_status=current_fan_status,
+        light_status=current_light_status,
+        last_update=last_update,
+    )
+
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html',
+                         rooms=ROOMS,
+                         fan_status=current_fan_status,
+                         light_status=current_light_status,
+                         email_recipient=email_recipient,
+                         last_update=last_update)
 
 @app.route('/report')
 def report():

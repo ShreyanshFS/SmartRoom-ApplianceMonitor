@@ -1,0 +1,125 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - SmartRoom{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h1>System Overview</h1>
+        <p>Real-time monitoring of binary sensor inputs and email alerts.</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Total Sensors</h3>
+                <div class="stat-icon primary">
+                    <i class="fas fa-broadcast-tower"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ rooms|length }}</div>
+            <p class="stat-subtitle">Active monitored nodes</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Active (HIGH)</h3>
+                <div class="stat-icon emerald">
+                    <i class="fas fa-activity"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ fan_status.values()|sum }}</div>
+            <p class="stat-subtitle">Inputs currently reading 1</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Lights ON</h3>
+                <div class="stat-icon amber">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ light_status.values()|sum }}</div>
+            <p class="stat-subtitle">Lighting circuits active</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Critical Alerts</h3>
+                <div class="stat-icon rose">
+                    <i class="fas fa-triangle-exclamation"></i>
+                </div>
+            </div>
+            <div class="stat-value">0</div>
+            <p class="stat-subtitle">Requires immediate attention</p>
+        </div>
+    </div>
+
+    <!-- Quick Controls -->
+    <div class="section">
+        <div class="section-header">
+            <h2>Quick Appliance Controls</h2>
+            <a href="{{ url_for('index') }}" class="view-all">Manage All &rarr;</a>
+        </div>
+
+        <div class="appliance-grid">
+            {% for room in rooms %}
+                <div class="appliance-card">
+                    <div class="card-header">
+                        <div class="icon-badge">{{ room.split('-')[1] }}</div>
+                        <button class="toggle-btn" onclick="toggleRoom('{{ room }}')">
+                            <span class="toggle-track"></span>
+                        </button>
+                    </div>
+                    <h3 class="card-title">Room {{ room }}</h3>
+                    <p class="card-location">Floor A</p>
+                    <div class="card-divider"></div>
+                    <div class="appliance-list">
+                        <div class="appliance-status">
+                            <span class="status-dot {% if fan_status.get(room) %}on{% else %}off{% endif %}"></span>
+                            <span class="status-text">Fan: {{ 'ON' if fan_status.get(room) else 'OFF' }}</span>
+                        </div>
+                        <div class="appliance-status">
+                            <span class="status-dot {% if light_status.get(room) %}on{% else %}off{% endif %}"></span>
+                            <span class="status-text">Light: {{ 'ON' if light_status.get(room) else 'OFF' }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="section">
+        <h2 class="section-title">Recent Activity Log</h2>
+        <div class="activity-log">
+            <div class="log-entry">
+                <div class="log-indicator email"></div>
+                <div class="log-content">
+                    <p class="log-message">Email sent to {{ email_recipient|default('admin') }}</p>
+                    <p class="log-time">{{ last_update|default('Today') }}</p>
+                </div>
+            </div>
+            <div class="log-entry">
+                <div class="log-indicator state"></div>
+                <div class="log-content">
+                    <p class="log-message">Status updated for all rooms</p>
+                    <p class="log-time">Just now</p>
+                </div>
+            </div>
+            <div class="log-entry">
+                <div class="log-indicator system"></div>
+                <div class="log-content">
+                    <p class="log-message">System boot completed successfully</p>
+                    <p class="log-time">This session</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleRoom(room) {
+            window.location.href = "{{ url_for('index') }}";
+        }
+    </script>
+{% endblock %}

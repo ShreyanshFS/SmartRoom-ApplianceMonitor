@@ -3,6 +3,24 @@
 {% block title %}Input Appliance Status{% endblock %}
 
 {% block content %}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-label">Rooms monitored</span>
+            <strong class="stat-value">{{ rooms|length }}</strong>
+            <p class="stat-detail">All connected rooms in the dashboard.</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Fans ON</span>
+            <strong class="stat-value">{{ fan_status.values()|sum }}</strong>
+            <p class="stat-detail">Appliances currently set to active.</p>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Lights ON</span>
+            <strong class="stat-value">{{ light_status.values()|sum }}</strong>
+            <p class="stat-detail">Lighting circuits currently active.</p>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header">
             <h2 class="card-title"><i class="fas fa-edit"></i> Update Appliance Status</h2>
