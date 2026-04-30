@@ -79,7 +79,7 @@ tr {{
     gmail_sender = os.getenv('GMAIL_SENDER', 'appliances.status@gmail.com')
     gmail_passwd = os.getenv('GMAIL_PASSWORD', 'rvwsbrpwiolvpesh')
 
-    msg = MIMEMultipart('alternative')
+    msg = MIMEMultipart('alternative')  
     msg['Subject'] = "Statistics of fan and light from the hostel"
     msg['From'] = gmail_sender
     msg['To'] = recipient

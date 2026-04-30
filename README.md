@@ -67,6 +67,8 @@ GMAIL_PASSWORD=your-app-specific-password
 
 ```bash
 python appliance_monitor.py
+or
+uv run python appliance_monitor.py
 ```
 
 Access at: **http://localhost:5000**
